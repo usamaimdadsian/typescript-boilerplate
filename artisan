@@ -1,29 +1,236 @@
+
+const { program } = require('commander');
 const fs = require('fs');
 const path = require('path');
 
-// Function to create a file
-function createFile(fileName, fileContent) {
-  const filePath = path.join(__dirname, fileName);
-  console.log(filePath,"Pakistan Zindabad")
+const main_folder = __dirname
+const parent_folder = path.join(__dirname,"src","modules")
 
-  // fs.writeFile(filePath, fileContent, (err) => {
-  //   if (err) {
-  //     console.error(`Failed to create file ${fileName}: ${err}`);
-  //   } else {
-  //     console.log(`File ${fileName} created successfully!`);
-  //   }
-  // });
+const getPath = (val) => {
+    return path.join(parent_folder,val)
 }
 
-// Get the command line arguments
-const args = process.argv.slice(2);
-console.log(args)
+const getTemplatePath = (val) => {
+    return path.join(main_folder,"templates",val)
+}
 
-// Iterate through the arguments and create files
-args.forEach((arg) => {
-  console.log(arg, __dirname)
-  const fileName = arg + '.txt'; // You can modify the extension if needed
-  const fileContent = 'This is the content of the file';
+const getVariables = (val) => {
+    let arr = val.split("/")
+    val = arr.pop()
+    // let name = val.toLowerCase()
+    let name = val.charAt(0).toLowerCase() + val.slice(1)
+    let name_capitalize = val.charAt(0).toUpperCase() + val.slice(1)
 
-  // createFile(fileName, fileContent);
-});
+    let controller_name = name_capitalize+"Controller"
+    let model_name = name_capitalize
+    let validation_name = name_capitalize+"Validation"
+    let service_name = name_capitalize+"Service"
+    let router_name = name_capitalize+"Routes"
+
+    let pth = path.join(name,arr.join("/"))
+
+    return {path:pth, name, model_name, controller_name, validation_name, service_name, router_name}
+}
+
+const paths = {
+    model: getTemplatePath("artisan.model"),
+    controller: getTemplatePath("artisan.controller"),
+    route: getTemplatePath("artisan.route"),
+    service: getTemplatePath("artisan.service"),
+    validation: getTemplatePath("artisan.validation"),
+}
+
+const createFile = (content, directoryPath,file_name) => {
+  directoryPath = path.join(parent_folder,directoryPath)
+  let file_path = path.join(directoryPath,file_name+".ts")
+
+  // Check if the directory exists
+  if (!fs.existsSync(directoryPath)) {
+    // Directory does not exist, create it
+    fs.mkdirSync(directoryPath, { recursive: true });
+  }
+
+  fs.writeFile(file_path, content, (err) => {
+    if (err) {
+      console.error(`Failed to create file ${file_path}: ${err}`);
+    } else {
+      console.log(`File ${file_path} created successfully!`);
+    }
+  });
+}
+
+const createModel = (model_name, path) => {
+  console.log("inside create model")
+  let file_path = paths.model
+  fs.readFile(file_path, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  
+    // Replace placeholders with strings
+    const replacedContent = data.replace(/<model_name>/g, model_name)
+  
+    // Output the modified content
+    createFile(replacedContent,path,model_name)
+  });
+
+
+  
+}
+
+const createController = (model_name, controller_name, validation_name, path) => {
+  console.log("inside create controller")
+  let file_path = paths.controller
+  fs.readFile(file_path, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  
+    // Replace placeholders with strings
+    const replacedContent = data.replace(/<model_name>/g, model_name).replace(/<controller_name>/g, controller_name).replace(/<validation_name>/g, validation_name);
+  
+    // Output the modified content
+    createFile(replacedContent,path,controller_name)
+
+  });
+}
+
+const createRouter = (name, controller_name, router_name, path) => {
+  console.log("inside create router")
+  let file_path = paths.route
+  fs.readFile(file_path, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  
+    // Replace placeholders with strings
+    const replacedContent = data.replace(/<name>/g, name).replace(/<controller_name>/g, controller_name);
+  
+    // Output the modified content
+    // console.log(replacedContent);
+    createFile(replacedContent,path,router_name)
+
+  });
+  
+}
+
+const createService = (service_name, path) => {
+  console.log("inside create service")
+  let file_path = paths.service
+  fs.readFile(file_path, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  
+    // Replace placeholders with strings
+    const replacedContent = data.replace(/<service_name>/g, service_name);
+  
+    // Output the modified content
+    // console.log(replacedContent);
+    createFile(replacedContent,path,service_name)
+
+  });
+  
+}
+
+const createValidation = (name, model_name, validation_name, path) => {
+  console.log("inside create validation")
+  let file_path = paths.validation
+  fs.readFile(file_path, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  
+    // Replace placeholders with strings
+    const replacedContent = data.replace(/<name>/g, name).replace(/<model_name>/g, model_name).replace(/<validation_name>/g, validation_name);
+  
+    // Output the modified content
+    // console.log(replacedContent);
+    createFile(replacedContent,path,validation_name)
+
+  });
+  
+}
+
+
+const autoCreator = (vars,options) => {
+  if (options.length > 0){
+    if (options.includes("all")){
+      createModel(vars.model_name,vars.path)
+      createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
+      createRouter(vars.name, vars.controller_name,vars.router_name, vars.path)
+      createService(vars.service_name, vars.path)
+      createValidation(vars.name, vars.model_name, vars.validation_name, vars.path)
+      
+    }
+    else{
+      for (let option of options){
+          if (option === "model"){
+              createModel(vars.model_name,vars.path)
+          }
+          if (option === "controller"){
+            createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
+          }
+          if (option === "route"){
+            createRouter(vars.name, vars.controller_name,vars.router_name, vars.path)
+          }
+          if (option === "service"){
+            createService(vars.service_name, vars.path)
+          }
+          if (option === "validation"){
+            createValidation(vars.name, vars.model_name, vars.validation_name, vars.path)
+          }
+          
+      }
+    }
+  }
+  else{
+    createModel(vars.model_name,vars.path)
+    createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
+    createRouter(vars.name, vars.controller_name,vars.router_name, vars.path)
+    createService(vars.service_name, vars.path)
+    createValidation(vars.name, vars.model_name, vars.validation_name, vars.path)
+    
+  }
+
+}
+
+// Custom command "make"
+program
+  .command('make <name>')
+  .description('Create a new file')
+//   .option('-t, --type <type>', 'Specify the file type')
+  .option('-a, --all', 'Create all files')
+  .option('-m, --model', 'create model')
+  .option('-c, --controller', 'create controller')
+  .option('-r, --route', 'create route')
+  .option('-s, --service', 'create service')
+  .option('-v, --validation', 'create validation')
+
+  .action((name, options) => {
+    let vars = getVariables(name)
+    options = Object.keys(options)
+
+    autoCreator(vars,options)
+
+    // const fileType = options.type || 'txt';
+    // const fileName = `${name}.${fileType}`;
+    // const filePath = path.join(__dirname, fileName);
+    // const fileContent = `This is the content of ${fileName}`;
+
+    // fs.writeFile(filePath, fileContent, (err) => {
+    //   if (err) {
+    //     console.error(`Failed to create file ${fileName}: ${err}`);
+    //   } else {
+    //     console.log(`File ${fileName} created successfully!`);
+    //   }
+    // });
+  });
+
+// Parse the command-line arguments
+program.parse(process.argv);

@@ -1,15 +1,15 @@
 import { Request, Response } from 'express';
 
-import Controller from '@/controllers/Controller';
-import { <model_name> } from '@/models';
-import { <validation_name> } from '@/validations';
+import {Controller} from '@/components';
+import { <model_name> } from './<model_name>';
+import { <validation_name> } from './<validation_name>';
 import { HttpStatus, response } from '@/utils';
 
 export class <controller_name> extends Controller{
 
     public index(req: Request, res: Response) {
         // Logic to fetch all users from the database
-        const users: User[] = [
+        const users: <model_name>[] = [
             { id: 1, name: 'John Doe' },
             { id: 2, name: 'Jane Smith' },
         ];
@@ -21,7 +21,7 @@ export class <controller_name> extends Controller{
         const id = parseInt(req.params.id, 10);
 
         // Logic to fetch user by ID from the database
-        const user: User | undefined = { id: 1, name: 'John Doe' };
+        const user: <model_name> | undefined = { id: 1, name: 'John Doe' };
 
         if (user) {
             response(HttpStatus.OK,res,user)
@@ -36,18 +36,17 @@ export class <controller_name> extends Controller{
         <validation_name>.validate(req.body)
 
         // Logic to create a new user in the database
-        const newUser: User = { id: 1, name };
+        const newUser: <model_name> = { id: 1, name };
 
         response(HttpStatus.CREATED,res,newUser)
     }
 
     public update(req: Request, res: Response) {
-        <validation_name>.validate(req.body)
         const id = parseInt(req.params.id, 10);
         const { name } = req.body;
 
         // Logic to update the user in the database
-        const updatedUser: User | undefined = { id, name };
+        const updatedUser: <model_name> | undefined = { id, name };
 
         if (updatedUser) {
             response(HttpStatus.OK,res,updatedUser)

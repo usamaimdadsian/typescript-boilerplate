@@ -1,4 +1,4 @@
-import { <model_name> } from "@/models";
+import { <model_name> } from "./<model_name>";
 import Joi from "joi";
 import { ValidationError } from "@/utils";
 

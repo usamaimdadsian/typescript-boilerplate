@@ -1,5 +1,5 @@
 import express, { Router } from 'express';
-import { <controller_name> } from '@/controllers';
+import { <controller_name> } from './<controller_name>';
 
 export const <name>Router = Router();
 const <name>Controller = new <controller_name>();
