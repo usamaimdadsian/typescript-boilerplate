@@ -1,0 +1,29 @@
+const fs = require('fs');
+const path = require('path');
+
+// Function to create a file
+function createFile(fileName, fileContent) {
+  const filePath = path.join(__dirname, fileName);
+  console.log(filePath,"Pakistan Zindabad")
+
+  // fs.writeFile(filePath, fileContent, (err) => {
+  //   if (err) {
+  //     console.error(`Failed to create file ${fileName}: ${err}`);
+  //   } else {
+  //     console.log(`File ${fileName} created successfully!`);
+  //   }
+  // });
+}
+
+// Get the command line arguments
+const args = process.argv.slice(2);
+console.log(args)
+
+// Iterate through the arguments and create files
+args.forEach((arg) => {
+  console.log(arg, __dirname)
+  const fileName = arg + '.txt'; // You can modify the extension if needed
+  const fileContent = 'This is the content of the file';
+
+  // createFile(fileName, fileContent);
+});
