@@ -1,9 +1,12 @@
+import { authorize } from "@/middlewares"
 import express, { Router } from 'express';
 import { UserController } from './UserController';
+
 
 export const userRouter = Router();
 const userController = new UserController();
 
+userRouter.use(authorize("admin"))
 userRouter.get('/', userController.index);
 userRouter.get('/:id', userController.show);
 userRouter.post('/', userController.create);
