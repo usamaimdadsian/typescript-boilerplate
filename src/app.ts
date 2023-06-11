@@ -1,6 +1,7 @@
 import express, { Application } from 'express';
 import { configureRoutes } from './routes';
 import { configureMiddlewares, afterRoutesMiddlewares } from './middlewares';
+import { setupSwagger } from './swagger';
 
 // Import other necessary dependencies and files
 
@@ -12,7 +13,7 @@ export class App {
     configureMiddlewares(this.app)
     configureRoutes(this.app)
     afterRoutesMiddlewares(this.app)
-    // Configure other necessary components
+    setupSwagger(this.app)
   }
 
   public listen(port: number, callback: () => void) {

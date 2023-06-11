@@ -1,0 +1,126 @@
+openapi: 3.0.0
+info:
+  title: <model_name>
+
+components:
+  schemas:
+    <model_name>:
+      type: object
+      properties:
+        id:
+          type: integer
+        name:
+          type: string
+        email:
+          type: string
+      required:
+        - id
+        - name
+        - email
+
+paths:
+  /<name>s:
+    get:
+      tags: 
+        - <model_name>
+      summary: Get all <name>s
+      description: Retrieve a list of all <name>s.
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/<model_name>"
+    
+    post:
+      tags: 
+        - <model_name>
+      summary: Create a <name>
+      description: Create a new <name>.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/<model_name>"
+      responses:
+        "201":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/<model_name>"
+
+
+
+  /<name>s/{id}:
+    get:
+      tags: 
+        - <model_name>
+      summary: Get <name> by ID
+      description: Retrieve a <name> by their ID.
+      parameters:
+        - in: path
+          name: id
+          description: <model_name> ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/<model_name>"
+        "404":
+          description: <model_name> not found
+
+    put:
+      tags: 
+        - <model_name>
+      summary: Edit <name> by ID
+      description: Update an existing <name> by their ID.
+      parameters:
+        - in: path
+          name: id
+          description: <model_name> ID
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/<model_name>"
+      responses:
+        "200":
+          description: Successful operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/<model_name>"
+        "404":
+          description: <model_name> not found
+
+    delete:
+      tags: 
+        - <model_name>
+      summary: Delete <name> by ID
+      description: Delete a <name> by their ID.
+      parameters:
+        - in: path
+          name: id
+          description: <model_name> ID
+          required: true
+          schema:
+            type: string
+      responses:
+        "204":
+          description: <model_name> deleted successfully
+        "404":
+          description: <model_name> not found

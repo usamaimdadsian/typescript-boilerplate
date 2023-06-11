@@ -26,7 +26,7 @@ export class UserController extends Controller{
         if (user) {
             response(HttpStatus.OK,res,user)
         } else {
-            response(HttpStatus.NO_CONTENT,res)
+            response(HttpStatus.NOT_FOUND,res)
         }
     }
 

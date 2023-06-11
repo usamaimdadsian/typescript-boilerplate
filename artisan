@@ -26,10 +26,11 @@ const getVariables = (val) => {
     let validation_name = name_capitalize+"Validation"
     let service_name = name_capitalize+"Service"
     let router_name = name_capitalize+"Routes"
+    let swagger_name = name_capitalize+"Swagger"
 
     let pth = path.join(name,arr.join("/"))
 
-    return {path:pth, name, model_name, controller_name, validation_name, service_name, router_name}
+    return {path:pth, name, model_name, controller_name, validation_name, service_name, router_name, swagger_name}
 }
 
 const paths = {
@@ -38,11 +39,19 @@ const paths = {
     route: getTemplatePath("artisan.route"),
     service: getTemplatePath("artisan.service"),
     validation: getTemplatePath("artisan.validation"),
+    swagger: getTemplatePath("artisan.swagger")
 }
 
-const createFile = (content, directoryPath,file_name) => {
+const createFile = (content, directoryPath,file_name, swagger=false) => {
   directoryPath = path.join(parent_folder,directoryPath)
-  let file_path = path.join(directoryPath,file_name+".ts")
+  let file_path;
+
+  if (swagger){
+    file_path = path.join(directoryPath,file_name+".yaml")
+  }
+  else{
+    file_path = path.join(directoryPath,file_name+".ts")
+  }
 
   // Check if the directory exists
   if (!fs.existsSync(directoryPath)) {
@@ -97,7 +106,7 @@ const createController = (model_name, controller_name, validation_name, path) =>
   });
 }
 
-const createRouter = (name, controller_name, router_name, path) => {
+const createRouter = (name, controller_name, router_name, model_name,swagger_name, path) => {
   console.log("inside create router")
   let file_path = paths.route
   fs.readFile(file_path, 'utf8', (err, data) => {
@@ -112,6 +121,22 @@ const createRouter = (name, controller_name, router_name, path) => {
     // Output the modified content
     // console.log(replacedContent);
     createFile(replacedContent,path,router_name)
+
+  });
+
+  file_path = paths.swagger
+  fs.readFile(file_path, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  
+    // Replace placeholders with strings
+    const replacedContent = data.replace(/<name>/g, name).replace(/<model_name>/g,model_name);
+  
+    // Output the modified content
+    // console.log(replacedContent);
+    createFile(replacedContent,path,swagger_name,true)
 
   });
   
@@ -163,7 +188,7 @@ const autoCreator = (vars,options) => {
     if (options.includes("all")){
       createModel(vars.model_name,vars.path)
       createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
-      createRouter(vars.name, vars.controller_name,vars.router_name, vars.path)
+      createRouter(vars.name, vars.controller_name,vars.router_name, vars.model_name, vars.swagger_name, vars.path)
       createService(vars.service_name, vars.path)
       createValidation(vars.name, vars.model_name, vars.validation_name, vars.path)
       
@@ -177,7 +202,7 @@ const autoCreator = (vars,options) => {
             createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
           }
           if (option === "route"){
-            createRouter(vars.name, vars.controller_name,vars.router_name, vars.path)
+            createRouter(vars.name, vars.controller_name,vars.router_name, vars.model_name,vars.swagger_name, vars.path)
           }
           if (option === "service"){
             createService(vars.service_name, vars.path)
@@ -192,7 +217,7 @@ const autoCreator = (vars,options) => {
   else{
     createModel(vars.model_name,vars.path)
     createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
-    createRouter(vars.name, vars.controller_name,vars.router_name, vars.path)
+    createRouter(vars.name, vars.controller_name,vars.router_name, vars.model_name,vars.swagger_name, vars.path)
     createService(vars.service_name, vars.path)
     createValidation(vars.name, vars.model_name, vars.validation_name, vars.path)
     
@@ -218,18 +243,6 @@ program
 
     autoCreator(vars,options)
 
-    // const fileType = options.type || 'txt';
-    // const fileName = `${name}.${fileType}`;
-    // const filePath = path.join(__dirname, fileName);
-    // const fileContent = `This is the content of ${fileName}`;
-
-    // fs.writeFile(filePath, fileContent, (err) => {
-    //   if (err) {
-    //     console.error(`Failed to create file ${fileName}: ${err}`);
-    //   } else {
-    //     console.log(`File ${fileName} created successfully!`);
-    //   }
-    // });
   });
 
 // Parse the command-line arguments
