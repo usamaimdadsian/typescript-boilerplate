@@ -144,7 +144,7 @@ const HttpMessages = {
 export const response = (status: string,res: Response, data: any="") => {
     let res_data = {message: HttpMessages[status]}
     if (data){
-        res_data["data"] = data
+        res_data = data
     }
     res.status(HttpStatusCodes[status]).json(res_data)
 }

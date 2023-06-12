@@ -1,9 +1,20 @@
-import { HttpStatus,response } from "@/utils";
+import { Request, Response, NextFunction } from "express"
 
-export function authorize(role: string) {
-    return (req: any, res: any, next: any) => {
+import { HttpStatus, response } from "@/utils";
+
+type UserRole = 'admin' | 'user'
+
+export function authorize(role: UserRole) {
+    return (req: Request, res: Response, next: NextFunction) => {
         console.log("autorization")
-        next()
+        const user_Role: UserRole = req.user.role
+
+        if (user_Role === role) {
+            next()
+        } else {
+
+            response(HttpStatus.FORBIDDEN, res)
+        }
         // if (req.user.role === role) {
         //     // User has the required role, proceed with the request
         //     next();

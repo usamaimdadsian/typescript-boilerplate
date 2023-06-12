@@ -1,21 +1,57 @@
+import cors from "cors"
+import helmet from "helmet"
+import xss from "xss-clean"
+import passport from "passport"
+import compression from "compression"
 import express, { Application, NextFunction, Response } from 'express';
 import { HttpStatus, response } from '@/utils';
 import { authorize } from './autorize';
+import { jwtStrategy } from "@/config/passport"
 
 
 
 function configureMiddlewares(app: Application) {
+    // set security HTTP headers
+    app.use(helmet());
+
     app.use(express.json())
 
+    // parse urlencoded request body
+    app.use(express.urlencoded({ extended: true }));
+
+    // sanitize request data
+    app.use(xss());
+
+    // gzip compression
+    app.use(compression());
+
+    // enable cors
+    app.use(cors());
+    app.options('*', cors());
+
+    // jwt authentication
+    app.use(passport.initialize());
+    passport.use('jwt', jwtStrategy);
+
+    // limit repeated failed requests to auth endpoints
+    // if (config.env === 'production') {
+    //     app.use('/v1/auth', authLimiter);
+    // }
+
+    app.use('/public', express.static(process.cwd() + "/public"))
 }
 
 function afterRoutesMiddlewares(app: Application) {
     app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
-        if (err.name === "ValidationError"){
+        if (err.name === "ValidationError") {
             response(HttpStatus.BAD_REQUEST, res, { data: err.message })
-        }else{
-            response(HttpStatus.INTERNAL_SERVER_ERROR,res)
+        } else {
+            response(HttpStatus.INTERNAL_SERVER_ERROR, res)
         }
+    });
+
+    app.use((req, res, next) => {
+        response(HttpStatus.NOT_FOUND,res)
     });
 }
 
