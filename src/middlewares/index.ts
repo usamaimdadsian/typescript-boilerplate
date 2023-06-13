@@ -7,10 +7,11 @@ import express, { Application, NextFunction, Response } from 'express';
 import { HttpStatus, response } from '@/utils';
 import { authorize } from './autorize';
 import { jwtStrategy } from "@/config/passport"
+import config from "@/config/config"
 
 
 
-function configureMiddlewares(app: Application) {
+const configureMiddlewares = (app: Application) => {
     // set security HTTP headers
     app.use(helmet());
 
@@ -41,12 +42,16 @@ function configureMiddlewares(app: Application) {
     app.use('/public', express.static(process.cwd() + "/public"))
 }
 
-function afterRoutesMiddlewares(app: Application) {
+const afterRoutesMiddlewares = (app: Application) => {
     app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
         if (err.name === "ValidationError") {
             response(HttpStatus.BAD_REQUEST, res, { data: err.message })
         } else {
-            response(HttpStatus.INTERNAL_SERVER_ERROR, res)
+            if (config.env === "development"){
+                response(HttpStatus.INTERNAL_SERVER_ERROR, res, err.message)
+            }else{
+                response(HttpStatus.INTERNAL_SERVER_ERROR, res)
+            }
         }
     });
 

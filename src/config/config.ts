@@ -23,6 +23,11 @@ const envVarsSchema = Joi.object()
         SMTP_USERNAME: Joi.string().description('username for email server'),
         SMTP_PASSWORD: Joi.string().description('password for email server'),
         EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
+        
+        AWS_KEY: Joi.string().required().description("AWS KEY"),
+        AWS_SECRET: Joi.string().required().description("AWS Secret"),
+        AWS_REGION: Joi.string().required().description("AWS Region")
+
     })
     .unknown();
 
@@ -64,10 +69,17 @@ const email = {
     from: envVars.EMAIL_FROM,
 };
 
+const aws = {
+    key: envVars.AWS_KEY,
+    secret: envVars.AWS_SECRET,
+    region: envVars.AWS_REGION
+}
+
 export default {
     env,
     port,
     mongoose,
     jwt,
     email,
+    aws
 };

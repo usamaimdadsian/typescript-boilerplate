@@ -12,8 +12,8 @@ export class App {
     this.app = express();
     configureMiddlewares(this.app)
     configureRoutes(this.app)
-    afterRoutesMiddlewares(this.app)
     setupSwagger(this.app)
+    afterRoutesMiddlewares(this.app)
   }
 
   public listen(port: number, callback: () => void) {

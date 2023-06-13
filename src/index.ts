@@ -1,6 +1,7 @@
 import { App } from './app';
+import config from './config/config';
 
-const port = parseInt(process.env.PORT) || 3000;
+const port = config.port || 3000;
 const app = new App();
 
 app.listen(port, () => {
