@@ -5,7 +5,7 @@ export const <name>Router = Router();
 const <name>Controller = new <controller_name>();
 
 <name>Router.get('/', <name>Controller.index);
-<name>Router.get('/:id', <name>Controller.show);
+<name>Router.get('/:userId', <name>Controller.show);
 <name>Router.post('/', <name>Controller.create);
-<name>Router.put('/:id', <name>Controller.update);
-<name>Router.delete('/:id', <name>Controller.delete);
+<name>Router.patch('/:userId', <name>Controller.update);
+<name>Router.delete('/:userId', <name>Controller.delete);

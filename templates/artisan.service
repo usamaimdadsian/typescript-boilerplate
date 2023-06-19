@@ -1,3 +1,100 @@
-export class <service_name> {
-    
+import mongoose from 'mongoose';
+
+
+import <model_name> from './<model_name>';
+import { ApiError, HttpStatus } from '@/utils';
+import { QueryResult, IOptions } from '@/components';
+import { NewCreated<model_name>, Update<model_name>Body, I<model_name>Doc, NewRegistered<model_name> } from "./<model_name>Interface"
+
+
+class <model_name>Service {
+  /**
+ * Create a user
+ * @param {NewCreated<model_name>} userBody
+ * @returns {Promise<I<model_name>Doc>}
+ */
+  static async create<model_name>(userBody: NewCreated<model_name>): Promise<I<model_name>Doc> {
+    if (await <model_name>.isEmailTaken(userBody.email)) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, 'Email already taken');
+    }
+    return <model_name>.create(userBody);
+  };
+
+  /**
+   * Register a user
+   * @param {NewRegistered<model_name>} userBody
+   * @returns {Promise<I<model_name>Doc>}
+   */
+  static async register<model_name>(userBody: NewRegistered<model_name>): Promise<I<model_name>Doc> {
+    if (await <model_name>.isEmailTaken(userBody.email)) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, 'Email already taken');
+    }
+    return <model_name>.create(userBody);
+  };
+
+  /**
+ * Query for users
+ * @param {Object} filter - Mongo filter
+ * @param {Object} options - Query options
+ * @returns {Promise<QueryResult>}
+ */
+  static async query<model_name>s(filter: Record<string, any>, options: IOptions): Promise<QueryResult> {
+    const users = await <model_name>.paginate(filter, options);
+    return users;
+  };
+
+
+  /**
+ * Get user by id
+ * @param {mongoose.Types.ObjectId} id
+ * @returns {Promise<I<model_name>Doc | null>}
+ */
+  static async get<model_name>ById(id: mongoose.Types.ObjectId): Promise<I<model_name>Doc | null> { return <model_name>.findById(id) };
+
+  /**
+   * Get user by email
+   * @param {string} email
+   * @returns {Promise<I<model_name>Doc | null>}
+   */
+  static async get<model_name>ByEmail(email: string): Promise<I<model_name>Doc | null> { return <model_name>.findOne({ email }) };
+
+  /**
+   * Update user by id
+   * @param {mongoose.Types.ObjectId} userId
+   * @param {Update<model_name>Body} updateBody
+   * @returns {Promise<I<model_name>Doc | null>}
+   */
+  static async update<model_name>ById(
+    userId: mongoose.Types.ObjectId,
+    updateBody: Update<model_name>Body
+  ): Promise<I<model_name>Doc | null> {
+    const user = await this.get<model_name>ById(userId);
+    if (!user) {
+      throw new ApiError(HttpStatus.NOT_FOUND, '<model_name> not found');
+    }
+    if (updateBody.email && (await <model_name>.isEmailTaken(updateBody.email, userId))) {
+      throw new ApiError(HttpStatus.BAD_REQUEST, 'Email already taken');
+    }
+    Object.assign(user, updateBody);
+    await user.save();
+    return user;
+  };
+
+  /**
+   * Delete user by id
+   * @param {mongoose.Types.ObjectId} userId
+   * @returns {Promise<I<model_name>Doc | null>}
+   */
+  static async delete<model_name>ById(userId: mongoose.Types.ObjectId): Promise<I<model_name>Doc | null> {
+    const user = await this.get<model_name>ById(userId);
+    if (!user) {
+      throw new ApiError(HttpStatus.NOT_FOUND, '<model_name> not found');
+    }
+    await user.deleteOne();
+    return user;
+  };
+
+
 }
+
+export default <model_name>Service;

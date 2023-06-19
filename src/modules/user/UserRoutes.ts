@@ -1,4 +1,4 @@
-import { authorize } from "@/middlewares"
+import {auth} from "@/middlewares"
 import express, { Router } from 'express';
 import { UserController } from './UserController';
 
@@ -6,9 +6,9 @@ import { UserController } from './UserController';
 export const userRouter = Router();
 const userController = new UserController();
 
-userRouter.use(authorize("admin"))
+userRouter.use(auth("admin"))
 userRouter.get('/', userController.index);
-userRouter.get('/:id', userController.show);
+userRouter.get('/:userId', userController.show);
 userRouter.post('/', userController.create);
-userRouter.put('/:id', userController.update);
-userRouter.delete('/:id', userController.delete);
+userRouter.patch('/:userId', userController.update);
+userRouter.delete('/:userId', userController.delete);

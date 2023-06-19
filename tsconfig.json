@@ -9,13 +9,15 @@
       "baseUrl": ".",
       "paths": {
         "@/*":["src/*"]
-      }
+      },
+      "experimentalDecorators": true,
+      "emitDecoratorMetadata": true
     },
     "include": [
       "src/**/*.ts"
     ],
     "exclude": [
-      "node_modules", ".vscode"
+      "node_modules", ".vscode","src/**/*Test.ts"
     ]
   }
   

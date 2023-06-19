@@ -47,7 +47,7 @@ export const HttpStatus = {
     GATEWAY_TIMEOUT: "GATEWAY_TIMEOUT",
 };
 
-const HttpStatusCodes = {
+export const HttpStatusCode = {
     // Informational
     CONTINUE: 100,                   // Continue with the request
 
@@ -146,5 +146,5 @@ export const response = (status: string,res: Response, data: any="") => {
     if (data){
         res_data = data
     }
-    res.status(HttpStatusCodes[status]).json(res_data)
+    res.status(HttpStatusCode[status]).json(res_data)
 }

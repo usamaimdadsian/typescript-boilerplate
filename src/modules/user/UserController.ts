@@ -1,66 +1,54 @@
+import mongoose from 'mongoose';
 import { Request, Response } from 'express';
 
-import {Controller} from '@/components';
-import { User } from './User';
+import { IOptions, Controller, validate } from '@/components';
+import { HttpStatus, response, pick, ApiError } from '@/utils';
+
+import UserService from './UserService';
 import { UserValidation } from './UserValidation';
-import { HttpStatus, response } from '@/utils';
 
-export class UserController extends Controller{
 
-    public index(req: Request, res: Response) {
-        // Logic to fetch all users from the database
-        const users: User[] = [
-            { id: 1, name: 'John Doe' },
-            { id: 2, name: 'Jane Smith' },
-        ];
+export class UserController extends Controller {
 
-        response(HttpStatus.OK,res,users)
-    }
+    @validate(UserValidation.index)
+    public async index(req: Request, res: Response){
+        const filter = pick(req.query, ['name', 'role']);
+        const options: IOptions = pick(req.query, ['sortBy', 'limit', 'page', 'projectBy']);
+        const result = await UserService.queryUsers(filter, options);
+        response(HttpStatus.OK, res, result)
+    };
 
-    public show(req: Request, res: Response) {
-        const id = parseInt(req.params.id, 10);
+    @validate(UserValidation.show)
+    public async show(req: Request, res: Response){
+        const user = await UserService.getUserById(req.params.userId);
+        if (!user) {
+            throw new ApiError(HttpStatus.NOT_FOUND, 'User not found');
+        }
+        response(HttpStatus.OK, res, user)
+    };
 
-        // Logic to fetch user by ID from the database
-        const user: User | undefined = { id: 1, name: 'John Doe' };
+    @validate(UserValidation.create)
+    public async create(req: Request, res: Response){
+        const user = await UserService.createUser(req.body);
+        response(HttpStatus.CREATED, res, user)
+    };
+
+
+    @validate(UserValidation.update)
+    public async update(req: Request, res: Response){
+        const user = await UserService.updateUserById(new mongoose.Types.ObjectId(req.params.userId), req.body);
 
         if (user) {
-            response(HttpStatus.OK,res,user)
+            response(HttpStatus.OK, res, user)
         } else {
-            response(HttpStatus.NOT_FOUND,res)
+            response(HttpStatus.NOT_FOUND, res)
         }
-    }
+    };
 
-    public create(req: Request, res: Response) {
-        const { name } = req.body;
 
-        UserValidation.validate(req.body)
-
-        // Logic to create a new user in the database
-        const newUser: User = { id: 1, name };
-
-        response(HttpStatus.CREATED,res,newUser)
-    }
-
-    public update(req: Request, res: Response) {
-        const id = parseInt(req.params.id, 10);
-        const { name } = req.body;
-
-        // Logic to update the user in the database
-        const updatedUser: User | undefined = { id, name };
-
-        if (updatedUser) {
-            response(HttpStatus.OK,res,updatedUser)
-        } else {
-            response(HttpStatus.NOT_FOUND,res)
-        }
-    }
-
-    public delete(req: Request, res: Response) {
-        const id = parseInt(req.params.id, 10);
-
-        // Logic to delete the user from the database
-        // ...
-
-        response(HttpStatus.OK,res)
-    }
+    @validate(UserValidation.delete)
+    public async delete(req: Request, res: Response){
+        await UserService.deleteUserById(req.params.userId);
+        response(HttpStatus.NO_CONTENT, res)
+    };
 }

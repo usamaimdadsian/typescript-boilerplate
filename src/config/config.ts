@@ -7,8 +7,9 @@ dotenv.config({ path: path.join(__dirname, '../../.env') });
 const envVarsSchema = Joi.object()
     .keys({
         NODE_ENV: Joi.string().valid('production', 'development', 'test').required(),
+        DATABASE: Joi.string().valid("mongo","dynamo").required(),
         PORT: Joi.number().default(3000),
-        MONGODB_URL: Joi.string().required().description('Mongo DB url'),
+        MONGODB_URL: Joi.string().description('Mongo DB url'),
         JWT_SECRET: Joi.string().required().description('JWT secret key'),
         JWT_ACCESS_EXPIRATION_MINUTES: Joi.number().default(30).description('minutes after which access tokens expire'),
         JWT_REFRESH_EXPIRATION_DAYS: Joi.number().default(30).description('days after which refresh tokens expire'),
@@ -24,10 +25,8 @@ const envVarsSchema = Joi.object()
         SMTP_PASSWORD: Joi.string().description('password for email server'),
         EMAIL_FROM: Joi.string().description('the from field in the emails sent by the app'),
         
-        AWS_KEY: Joi.string().required().description("AWS KEY"),
-        AWS_SECRET: Joi.string().required().description("AWS Secret"),
-        AWS_REGION: Joi.string().required().description("AWS Region")
-
+        ROLES: Joi.string(),
+        CLIENT_URL: Joi.string().required().description('Client url')
     })
     .unknown();
 
@@ -39,6 +38,8 @@ if (error) {
 
 const env = envVars.NODE_ENV;
 const port = envVars.PORT;
+const roles = envVars.ROLES.split(/\s*,\s*/)
+
 
 const mongoose = {
     url: envVars.MONGODB_URL + (envVars.NODE_ENV === 'test' ? '-test' : ''),
@@ -69,11 +70,7 @@ const email = {
     from: envVars.EMAIL_FROM,
 };
 
-const aws = {
-    key: envVars.AWS_KEY,
-    secret: envVars.AWS_SECRET,
-    region: envVars.AWS_REGION
-}
+
 
 export default {
     env,
@@ -81,5 +78,6 @@ export default {
     mongoose,
     jwt,
     email,
-    aws
+    roles,
+    clientUrl: envVars.CLIENT_URL
 };

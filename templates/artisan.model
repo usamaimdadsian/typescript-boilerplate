@@ -1,6 +1,91 @@
-export interface <model_name> {
-    id: number;
-    name: string;
-    email?: string;
-    // Add other properties as needed
-}
+import bcrypt from 'bcryptjs';
+import mongoose from 'mongoose';
+import validator from 'validator';
+
+
+import config from '@/config/config';
+import { toJSON, paginate } from '@/utils';
+import { I<model_name>Doc, I<model_name>Model } from './<model_name>Interface';
+
+const <name>Schema = new mongoose.Schema<I<model_name>Doc, I<model_name>Model>(
+  {
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
+    email: {
+      type: String,
+      required: true,
+      unique: true,
+      trim: true,
+      lowercase: true,
+      validate(value: string) {
+        if (!validator.isEmail(value)) {
+          throw new Error('Invalid email');
+        }
+      },
+    },
+    password: {
+      type: String,
+      required: true,
+      trim: true,
+      minlength: 8,
+      validate(value: string) {
+        if (!value.match(/\d/) || !value.match(/[a-zA-Z]/)) {
+          throw new Error('Password must contain at least one letter and one number');
+        }
+      },
+      private: true, // used by the toJSON plugin
+    },
+    role: {
+      type: String,
+      enum: config.roles,
+      default: '<name>',
+    },
+    isEmailVerified: {
+      type: Boolean,
+      default: false,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
+// add plugin that converts mongoose to json
+<name>Schema.plugin(toJSON);
+<name>Schema.plugin(paginate);
+
+/**
+ * Check if email is taken
+ * @param {string} email - The <name>'s email
+ * @param {ObjectId} [exclude<model_name>Id] - The id of the <name> to be excluded
+ * @returns {Promise<boolean>}
+ */
+<name>Schema.static('isEmailTaken', async function (email: string, exclude<model_name>Id: mongoose.ObjectId): Promise<boolean> {
+  const <name> = await this.findOne({ email, _id: { $ne: exclude<model_name>Id } });
+  return !!<name>;
+});
+
+/**
+ * Check if password matches the <name>'s password
+ * @param {string} password
+ * @returns {Promise<boolean>}
+ */
+<name>Schema.method('isPasswordMatch', async function (password: string): Promise<boolean> {
+  const <name> = this;
+  return bcrypt.compare(password, <name>.password);
+});
+
+<name>Schema.pre('save', async function (next) {
+  const <name> = this;
+  if (<name>.isModified('password')) {
+    <name>.password = await bcrypt.hash(<name>.password, 8);
+  }
+  next();
+});
+
+const <model_name> = mongoose.model<I<model_name>Doc, I<model_name>Model>('<model_name>', <name>Schema);
+
+export default <model_name>;

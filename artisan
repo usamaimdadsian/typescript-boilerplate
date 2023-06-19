@@ -34,6 +34,7 @@ const getVariables = (val) => {
 }
 
 const paths = {
+    interface: getTemplatePath("artisan.interface"),
     model: getTemplatePath("artisan.model"),
     controller: getTemplatePath("artisan.controller"),
     route: getTemplatePath("artisan.route"),
@@ -63,14 +64,28 @@ const createFile = (content, directoryPath,file_name, swagger=false) => {
     if (err) {
       console.error(`Failed to create file ${file_path}: ${err}`);
     } else {
-      console.log(`File ${file_path} created successfully!`);
+      console.log(`File ${file_name} created successfully!`);
     }
   });
 }
 
-const createModel = (model_name, path) => {
-  console.log("inside create model")
+const createModel = (name,model_name, path) => {
   let file_path = paths.model
+  fs.readFile(file_path, 'utf8', (err, data) => {
+    if (err) {
+      console.error(err);
+      return;
+    }
+  
+    // Replace placeholders with strings
+    const replacedContent = data.replace(/<model_name>/g, model_name).replace(/<name>/g,name)
+  
+    // Output the modified content
+    createFile(replacedContent,path,model_name)
+  });
+
+
+  file_path = paths.interface
   fs.readFile(file_path, 'utf8', (err, data) => {
     if (err) {
       console.error(err);
@@ -81,7 +96,7 @@ const createModel = (model_name, path) => {
     const replacedContent = data.replace(/<model_name>/g, model_name)
   
     // Output the modified content
-    createFile(replacedContent,path,model_name)
+    createFile(replacedContent,path,model_name+"Interface")
   });
 
 
@@ -89,7 +104,6 @@ const createModel = (model_name, path) => {
 }
 
 const createController = (model_name, controller_name, validation_name, path) => {
-  console.log("inside create controller")
   let file_path = paths.controller
   fs.readFile(file_path, 'utf8', (err, data) => {
     if (err) {
@@ -107,7 +121,6 @@ const createController = (model_name, controller_name, validation_name, path) =>
 }
 
 const createRouter = (name, controller_name, router_name, model_name,swagger_name, path) => {
-  console.log("inside create router")
   let file_path = paths.route
   fs.readFile(file_path, 'utf8', (err, data) => {
     if (err) {
@@ -142,8 +155,7 @@ const createRouter = (name, controller_name, router_name, model_name,swagger_nam
   
 }
 
-const createService = (service_name, path) => {
-  console.log("inside create service")
+const createService = (model_name, service_name, path) => {
   let file_path = paths.service
   fs.readFile(file_path, 'utf8', (err, data) => {
     if (err) {
@@ -152,7 +164,7 @@ const createService = (service_name, path) => {
     }
   
     // Replace placeholders with strings
-    const replacedContent = data.replace(/<service_name>/g, service_name);
+    const replacedContent = data.replace(/<service_name>/g, service_name).replace(/<model_name>/g, model_name);
   
     // Output the modified content
     // console.log(replacedContent);
@@ -163,7 +175,6 @@ const createService = (service_name, path) => {
 }
 
 const createValidation = (name, model_name, validation_name, path) => {
-  console.log("inside create validation")
   let file_path = paths.validation
   fs.readFile(file_path, 'utf8', (err, data) => {
     if (err) {
@@ -186,17 +197,17 @@ const createValidation = (name, model_name, validation_name, path) => {
 const autoCreator = (vars,options) => {
   if (options.length > 0){
     if (options.includes("all")){
-      createModel(vars.model_name,vars.path)
+      createModel(vars.name,vars.model_name,vars.path)
       createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
       createRouter(vars.name, vars.controller_name,vars.router_name, vars.model_name, vars.swagger_name, vars.path)
-      createService(vars.service_name, vars.path)
+      createService(vars.model_name,vars.service_name, vars.path)
       createValidation(vars.name, vars.model_name, vars.validation_name, vars.path)
       
     }
     else{
       for (let option of options){
           if (option === "model"){
-              createModel(vars.model_name,vars.path)
+              createModel(vars.name,vars.model_name,vars.path)
           }
           if (option === "controller"){
             createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
@@ -205,7 +216,7 @@ const autoCreator = (vars,options) => {
             createRouter(vars.name, vars.controller_name,vars.router_name, vars.model_name,vars.swagger_name, vars.path)
           }
           if (option === "service"){
-            createService(vars.service_name, vars.path)
+            createService(vars.model_name,vars.service_name, vars.path)
           }
           if (option === "validation"){
             createValidation(vars.name, vars.model_name, vars.validation_name, vars.path)
@@ -215,10 +226,10 @@ const autoCreator = (vars,options) => {
     }
   }
   else{
-    createModel(vars.model_name,vars.path)
+    createModel(vars.name,vars.model_name,vars.path)
     createController(vars.model_name,vars.controller_name,vars.validation_name, vars.path)
     createRouter(vars.name, vars.controller_name,vars.router_name, vars.model_name,vars.swagger_name, vars.path)
-    createService(vars.service_name, vars.path)
+    createService(vars.model_name,vars.service_name, vars.path)
     createValidation(vars.name, vars.model_name, vars.validation_name, vars.path)
     
   }

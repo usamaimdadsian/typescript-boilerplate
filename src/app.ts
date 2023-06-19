@@ -19,4 +19,8 @@ export class App {
   public listen(port: number, callback: () => void) {
     this.app.listen(port, callback);
   }
+
+  public getApp(){
+    return this.app
+  }
 }

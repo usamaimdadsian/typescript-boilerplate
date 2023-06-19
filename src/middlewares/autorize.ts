@@ -1,26 +1,38 @@
-import { Request, Response, NextFunction } from "express"
+import { Request, Response, NextFunction } from 'express';
+import passport from 'passport';
+import { HttpStatus, ApiError } from '@/utils';
+// import { roleRights } from '../../config/roles';
+import config from '@/config/config';
+import { IUserDoc } from '@/modules/user/UserInterface';
 
-import { HttpStatus, response } from "@/utils";
+const verifyCallback =
+    (req: Request, resolve: any, reject: any, roles: string[]) =>
+        async (err: Error, user: IUserDoc, info: string) => {
+            if (err || info || !user) {
+                return reject(new ApiError(HttpStatus.UNAUTHORIZED, 'Please authenticate'));
+            }
+            req.user = user;
 
-type UserRole = 'admin' | 'user'
+            if (roles.length) {
+                if (!roles.includes(user.role)) {
+                    return reject(new ApiError(HttpStatus.FORBIDDEN, 'Forbidden'));
+                }
+            }
 
-export function authorize(role: UserRole) {
-    return (req: Request, res: Response, next: NextFunction) => {
-        console.log("autorization")
-        const user_Role: UserRole = req.user.role
+            resolve();
+        };
 
-        if (user_Role === role) {
-            next()
-        } else {
-
-            response(HttpStatus.FORBIDDEN, res)
+const auth =
+    (...roles: string[]) => {
+        if (roles.length < 1){
+            roles = config.roles
         }
-        // if (req.user.role === role) {
-        //     // User has the required role, proceed with the request
-        //     next();
-        // } else {
-        //     // User does not have the required role, return an error
-        //     response(HttpStatus.FORBIDDEN,res)
-        // }
-    };
-}
+        return async (req: Request, res: Response, next: NextFunction) =>
+            new Promise<void>((resolve, reject) => {
+                passport.authenticate('jwt', { session: false }, verifyCallback(req, resolve, reject, roles))(req, res, next);
+            })
+                .then(() => next())
+                .catch((err) => next(err));
+    }
+
+export default auth;

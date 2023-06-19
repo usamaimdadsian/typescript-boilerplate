@@ -1,21 +1,50 @@
-import { User } from "./User";
 import Joi from "joi";
-import { ValidationError } from "@/utils";
+import config from "@/config/config";
+import { customValidators } from "@/utils";
 
 export class UserValidation {
-  static validate(user: User): void {
-    const schema = Joi.object({
+  static create = {
+    body: Joi.object().keys({
+      email: Joi.string().required().email(),
+      password: Joi.string().required().custom(customValidators.password),
       name: Joi.string().required(),
-      email: Joi.string().email().required(),
-      password: Joi.string().min(8).required(),
-    });
+      role: Joi.string().required().valid(...config.roles),
+    }),
+  };
 
-    const { error } = schema.validate(user);
-    if (error) {
-      // console.log("Invalid user input:", error.details[0].message);
-      throw new ValidationError(error.details[0].message)
-    }
+  static index = {
+    query: Joi.object().keys({
+      name: Joi.string(),
+      role: Joi.string(),
+      sortBy: Joi.string(),
+      projectBy: Joi.string(),
+      limit: Joi.number().integer(),
+      page: Joi.number().integer(),
+    }),
+  };
 
-    // Add more custom validations if needed
-  }
+  static show = {
+    params: Joi.object().keys({
+      userId: Joi.string().custom(customValidators.objectId),
+    }),
+  };
+
+  static update = {
+    params: Joi.object().keys({
+      userId: Joi.required().custom(customValidators.objectId),
+    }),
+    body: Joi.object()
+      .keys({
+        email: Joi.string().email(),
+        password: Joi.string().custom(customValidators.password),
+        name: Joi.string(),
+      })
+      .min(1),
+  };
+
+  static delete = {
+    params: Joi.object().keys({
+      userId: Joi.string().custom(customValidators.objectId),
+    }),
+  };
 }
